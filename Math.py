@@ -5,7 +5,7 @@ class Math:
 
     @staticmethod
     def count(df: pd.DataFrame) -> int:
-        return len(df)
+        return len(df[~df.isna()])
 
     @staticmethod
     def mean(df: pd.DataFrame) -> float:

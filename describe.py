@@ -19,8 +19,6 @@ ROW_INDEX = {
 
 def describe(df: pd.DataFrame) -> pd.DataFrame:
     numerical_features = df.select_dtypes(include=[np.number])
-    if 'Index' in numerical_features.columns:
-        numerical_features.drop('Index', axis=1, inplace=True)
 
     describe_data = {}
     for index, data in numerical_features.iteritems():
@@ -31,15 +29,18 @@ def describe(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Train model with linear regression')
+    parser = argparse.ArgumentParser(description='Describe given dataset')
     parser.add_argument('dataset', type=str, help='dataset on which "describe" is performed')
+    parser.add_argument('--show-real', action='store_true', help='print true output of pandas.describe()')
     args = parser.parse_args()
 
     df = utils.get_dataset(args.dataset)
     description = describe(df)
 
-    pd.set_option('display.max_columns', None)
+    # pd.set_option('display.max_columns', None)
     print(description)
+    if args.show_real:
+        print(df.select_dtypes(include=[np.number]).describe())
 
 
 if __name__ == "__main__":
