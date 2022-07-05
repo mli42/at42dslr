@@ -14,7 +14,7 @@ class Math:
     @staticmethod
     def std(df: pd.DataFrame) -> float:
         res = 0
-        m = Math.count(df)
+        m = Math.count(df) - 1
         mean = Math.mean(df)
 
         for x in df:
@@ -46,9 +46,13 @@ class Math:
     @staticmethod
     def quartile(df: pd.DataFrame, n: float) -> float:
         df = df.sort_values()
-        index: float = np.ceil(Math.count(df) * (n / 4)) - 1
+        m: int = Math.count(df) - 1
+        index: float = m * (n / 4)
 
-        return df[index]
+        if index.is_integer():
+            return df.iloc[int(index)]
+        floored, ceiled = int(index), int(index) + 1
+        return df.iloc[floored] * (ceiled - index) + df.iloc[ceiled] * (index - floored)
 
     @staticmethod
     def first_quartile(df: pd.DataFrame) -> float:

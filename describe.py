@@ -40,7 +40,8 @@ def main():
     # pd.set_option('display.max_columns', None)
     print(description)
     if args.show_real:
-        print(df.select_dtypes(include=[np.number]).describe())
+        true_describe = df.select_dtypes(include=[np.number]).describe()
+        print(true_describe)
 
 
 if __name__ == "__main__":
