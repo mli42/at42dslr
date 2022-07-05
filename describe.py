@@ -18,7 +18,7 @@ ROW_INDEX = {
 }
 
 def describe(df: pd.DataFrame) -> pd.DataFrame:
-    numerical_features = df.select_dtypes(include=[np.number])
+    numerical_features = utils.get_numeric_features(df)
 
     describe_data = {}
     for index, data in numerical_features.iteritems():
@@ -40,7 +40,7 @@ def main():
     # pd.set_option('display.max_columns', None)
     print(description)
     if args.show_real:
-        true_describe = df.select_dtypes(include=[np.number]).describe()
+        true_describe = utils.get_numeric_features(df).describe()
         print(true_describe)
 
 
