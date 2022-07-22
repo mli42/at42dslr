@@ -109,6 +109,18 @@ def get_theta() -> np.ndarray:
     return theta
 
 
+def minmax(x: np.ndarray, x_min: float, x_max: float) -> np.ndarray:
+    """Computes the normalized version of a non-empty numpy.ndarray using the min-max standardization.
+    Args:
+        x: has to be an numpy.ndarray, m * 1.
+    Returns:
+        x' as a numpy.ndarray, m * 1.
+    """
+    span = x_max - x_min
+    res = (x - x_min) / span
+    return res
+
+
 def get_data(path: str) -> Tuple[np.ndarray, np.ndarray]:
     """Read the data and returns the data X and the labels Y
     Returns:
@@ -121,6 +133,7 @@ def get_data(path: str) -> Tuple[np.ndarray, np.ndarray]:
     except Exception as e:
         print(f"{get_data.__name__}: {e}")
         exit(1)
+    df = df[[*FEATURES, LABEL_FEATURE]].dropna()
     x = df[FEATURES].to_numpy()
     y = df[LABEL_FEATURE].to_numpy().reshape(-1, 1)
 

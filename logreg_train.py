@@ -60,8 +60,10 @@ class MyLogRegression():
         Returns:
             x' as a numpy.ndarray, m * 1.
         """
-        res = utils.minmax(x, np.min(x), np.max(x))
-        return res
+        x = x.copy()
+        for i in range(x.shape[1]):
+            x[..., i] = utils.minmax(x[..., i], np.min(x[..., i]), np.max(x[..., i]))
+        return x
 
     def gradient(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         """Computes a gradient vector from three non-empty numpy.ndarray
@@ -83,14 +85,14 @@ class MyLogRegression():
         Description:
             Fits the model to the training dataset contained in x and y.
         Args:
-            x: a vector of dimension m * 1
+            x: a vector of dimension m * n
             y: a vector of dimension m * 1
-            theta: a vector of dimension 2 * 1.
+            theta: a vector of dimension (n + 1) * 1.
             alpha: a float, the learning rate
             max_iter: an int, the number of iterations done
         """
         alpha = self.alpha
-        if x.shape != y.shape or self.theta.shape != (2, 1) or self.max_iter <= 0:
+        if x.shape[0] != y.shape[0] or self.theta.shape != (x.shape[1] + 1, 1) or self.max_iter <= 0:
             return None
         norm_x = self.minmax(x)
         losses = []
