@@ -1,8 +1,9 @@
+import json
 import numpy as np
 import pandas as pd
 from typing import Tuple
 
-THETA_FILE = "theta.txt"
+THETA_FILE = "theta.json"
 FEATURES = ["Astronomy", "Ancient Runes"]
 THETA_SIZE = len(FEATURES) + 1
 LABEL_FEATURE = "Hogwarts House"
@@ -79,33 +80,25 @@ def str_array(array: np.ndarray) -> str:
 
 
 def save_theta(theta: np.ndarray) -> None:
-    print(f"{save_theta.__name__}: saving {str_array(theta)}")
+    string = json.dumps(theta, sort_keys=True, indent=4)
     try:
         with open(THETA_FILE, "w") as file:
-            for element in theta:
-                file.write(f"{element[0]}\n")
+            file.write(string + '\n')
     except Exception as e:
         print(f"{save_theta.__name__} failed: {e}")
 
 
+def get_default_theta() -> np.ndarray:
+    return np.asarray([[.0]] * THETA_SIZE)
+
 def get_theta() -> np.ndarray:
-    theta = np.asarray([[.0]] * THETA_SIZE)
+    theta = None
 
     try:
-        tmp_theta = theta.copy()
         with open(THETA_FILE, "r") as file:
-            for i, line in enumerate(file):
-                if i >= THETA_SIZE:
-                    raise Exception("File too long")
-                tmp_theta[i][0] = float(line.strip())
-                if np.isnan(tmp_theta[i][0]):
-                    raise Exception("Has NaN")
-            if i < THETA_SIZE - 1:
-                raise Exception("File too short")
-        theta = tmp_theta
+            theta = json.load(file)
     except Exception as e:
         print(f"File `{THETA_FILE}` corrupted: {e}")
-        save_theta(theta)
     return theta
 
 

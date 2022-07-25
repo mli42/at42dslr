@@ -11,9 +11,7 @@ class MyLogRegression():
     def __init__(self, alpha: float, max_iter: int):
         self.alpha = alpha
         self.max_iter = max_iter
-        self.theta = utils.get_theta()
         print(f"MyLR: Using {self.alpha = }, and {self.max_iter = }")
-        print(f"MyLR: got theta {utils.str_array(self.theta)}")
 
     @staticmethod
     def cost_(y: np.ndarray, y_hat: np.ndarray) -> float:
@@ -75,26 +73,27 @@ class MyLogRegression():
             The gradient as a numpy.ndarray, a vector of dimension 2 * 1.
         """
         m = x.shape[0]
-        theta0 = self.alpha * np.sum(utils.predict(x, self.theta) - y) / m
-        theta1 = self.alpha * np.sum((utils.predict(x, self.theta) - y) * x) / m
-        nabla_j = np.asarray([[theta0], [theta1]])
+        y_hat = utils.predict(x, self.theta)
+        x_prime = utils.add_intercept(x)
+        nabla_j = x_prime.T.dot(y_hat - y) / m
         return nabla_j
 
-    def fit(self, x: np.ndarray, y: np.ndarray, show_gradient: bool) -> None:
+    def fit(self, x: np.ndarray, y: np.ndarray, show_gradient: bool) -> np.ndarray:
         """
         Description:
             Fits the model to the training dataset contained in x and y.
         Args:
             x: a vector of dimension m * n
             y: a vector of dimension m * 1
-            theta: a vector of dimension (n + 1) * 1.
-            alpha: a float, the learning rate
-            max_iter: an int, the number of iterations done
+        Returns:
+            Trained theta
         """
         alpha = self.alpha
+        self.theta = utils.get_default_theta()
         if x.shape[0] != y.shape[0] or self.theta.shape != (x.shape[1] + 1, 1) or self.max_iter <= 0:
             return None
-        norm_x = self.minmax(x)
+        # norm_x = self.minmax(x)
+        norm_x = x
         losses = []
         for i in range(self.max_iter):
             gradient = self.gradient(norm_x, y)
@@ -108,13 +107,24 @@ class MyLogRegression():
                 self.plot_hypo(x, y, y_hat)
                 plt.show()
 
-        utils.save_theta(self.theta)
-        print(f"Last loss: {losses[-1]}")
+        # self.plot(x, y, y_hat, losses)
+        return self.theta
 
-        self.plot(x, y, y_hat, losses)
+def one_vs_all(args) -> None:
+    mylr = MyLogRegression(alpha=args.alpha, max_iter=args.max_iter)
+    x, y = utils.get_data("./datasets/train.csv")
+    theta = {}
+
+    for feat_value in np.unique(y):
+        y_one_vs_all = (y == feat_value).astype(int)
+        one_theta = mylr.fit(x, y_one_vs_all, args.show)
+        theta[feat_value] = one_theta.flatten().tolist()
+
+    utils.save_theta({ utils.LABEL_FEATURE: theta })
+
 
 def main():
-    DEFAULT_ALPHA = 0.1
+    DEFAULT_ALPHA = 1e-2
     DEFAULT_ITER = 1000
 
     parser = argparse.ArgumentParser(description='Train model with logistic regression')
@@ -126,9 +136,8 @@ def main():
         help='display plots during gradient descent')
     args = parser.parse_args()
 
-    mylr = MyLogRegression(alpha=args.alpha, max_iter=args.max_iter)
-    x, y = utils.get_data("./datasets/train.csv")
-    mylr.fit(x, y, args.show)
+    one_vs_all(args)
+
 
 if __name__ == "__main__":
     main()
