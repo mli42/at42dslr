@@ -2,6 +2,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score
 import utils
 import argparse
 from typing import List, Tuple
@@ -88,8 +89,11 @@ class MyLogRegression():
         self.theta = utils.get_default_theta()
         if x.shape[0] != y.shape[0] or self.theta.shape != (x.shape[1] + 1, 1) or self.max_iter <= 0:
             return None
+        m = x.shape[0]
         norm_x = self.minmax(x)
         losses = []
+        accuracies = []
+
         for i in range(self.max_iter):
             gradient = self.gradient(norm_x, y)
             self.theta -= gradient
@@ -98,17 +102,24 @@ class MyLogRegression():
             running_loss = MyLogRegression.cost_(y, y_hat)
             losses.append(running_loss)
 
+            correct = np.sum(y == np.rint(y_hat))
+            running_accuracy = 100 * correct / m
+            accuracies.append(running_accuracy)
+
             if args.show and i % 100 == 0:
                 self.plot_hypo(x, y, y_hat, label)
                 plt.show()
 
+        print(f"Last accuracy: {accuracies[-1]}")
         print(f"Last loss: {losses[-1]}")
 
+        if args.accuracy:
+            self.simple_plot(f"Train accuracy for '{label}'", accuracies, 'Accuracy', ('Iteration', 'Accuracy'))
         if args.loss:
             self.simple_plot(f"Train loss for '{label}'", losses, 'Loss', ('Iteration', 'Loss'))
         if args.repartition:
             self.plot_hypo(x, y, y_hat, label)
-        if args.loss or args.repartition:
+        if args.accuracy or args.loss or args.repartition:
             plt.show()
 
         return self.theta
@@ -137,6 +148,7 @@ def main():
         help=f'define number of iterations (default: {DEFAULT_ITER})')
     parser.add_argument('--show', action='store_true',
         help='display plots during gradient descent')
+    parser.add_argument('--accuracy', action='store_true', help='plot the accuracy')
     parser.add_argument('--loss', action='store_true', help='plot the loss')
     parser.add_argument('-r', dest='repartition', action='store_true', help='plot the data repartition')
     args = parser.parse_args()
