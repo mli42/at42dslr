@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import utils
 import argparse
-from typing import List
+from typing import List, Tuple
 
 class MyLogRegression():
 
@@ -28,28 +28,23 @@ class MyLogRegression():
         j_elem = (y_hat - y) ** 2 / y.shape[0]
         return np.sum(j_elem)
 
-    def plot_hypo(self, x: np.ndarray, y: np.ndarray, y_hat: np.ndarray) -> None:
+    def plot_hypo(self, x: np.ndarray, y: np.ndarray, y_hat: np.ndarray, label: str) -> None:
         plt.figure()
-        # Data repartition
+        plt.title(f"Data repartition between dataset and prediction model for '{label}'")
         plt.plot(x, y, "o")
-        # Prediction model
-        plt.plot(x, y_hat)
-        plt.title('Data repartition and predition model')
-        plt.legend(['Dataset','Hypothesis'])
-        plt.xlabel("Mileage (km)")
-        plt.ylabel("Price of car")
+        plt.plot(x, y_hat, "o")
+        plt.legend([
+            *[f"Dataset data for '{string}' feature" for string in utils.FEATURES],
+            *[f"Prediction data for '{string}' feature" for string in utils.FEATURES],
+        ])
 
-    def plot(self, x: np.ndarray, y: np.ndarray, y_hat: np.ndarray, losses: List[float]) -> None:
-        self.plot_hypo(x, y, y_hat)
-
+    def simple_plot(self, title: str, plot: List[float], legend: str, axes_labels: Tuple) -> None:
         plt.figure()
-        plt.title('Train loss through epochs')
-        plt.plot(losses)
-        plt.legend(['Loss'])
-        plt.xlabel('Epoch')
-        plt.ylabel('Loss')
-
-        plt.show()
+        plt.title(title)
+        plt.plot(plot)
+        plt.legend([legend])
+        plt.xlabel(axes_labels[0])
+        plt.ylabel(axes_labels[1])
 
     def minmax(self, x: np.ndarray) -> np.ndarray:
         """Computes the normalized version of a non-empty numpy.ndarray using the min-max standardization.
@@ -78,7 +73,7 @@ class MyLogRegression():
         nabla_j = x_prime.T.dot(y_hat - y) / m
         return nabla_j
 
-    def fit(self, x: np.ndarray, y: np.ndarray, show_gradient: bool) -> np.ndarray:
+    def fit(self, x: np.ndarray, y: np.ndarray, args, label: str) -> np.ndarray:
         """
         Description:
             Fits the model to the training dataset contained in x and y.
@@ -88,12 +83,12 @@ class MyLogRegression():
         Returns:
             Trained theta
         """
+        print(f"==> Training for label '{label}'...")
         alpha = self.alpha
         self.theta = utils.get_default_theta()
         if x.shape[0] != y.shape[0] or self.theta.shape != (x.shape[1] + 1, 1) or self.max_iter <= 0:
             return None
-        # norm_x = self.minmax(x)
-        norm_x = x
+        norm_x = self.minmax(x)
         losses = []
         for i in range(self.max_iter):
             gradient = self.gradient(norm_x, y)
@@ -103,11 +98,19 @@ class MyLogRegression():
             running_loss = MyLogRegression.cost_(y, y_hat)
             losses.append(running_loss)
 
-            if show_gradient and i % 100 == 0:
-                self.plot_hypo(x, y, y_hat)
+            if args.show and i % 100 == 0:
+                self.plot_hypo(x, y, y_hat, label)
                 plt.show()
 
-        # self.plot(x, y, y_hat, losses)
+        print(f"Last loss: {losses[-1]}")
+
+        if args.loss:
+            self.simple_plot(f"Train loss for '{label}'", losses, 'Loss', ('Iteration', 'Loss'))
+        if args.repartition:
+            self.plot_hypo(x, y, y_hat, label)
+        if args.loss or args.repartition:
+            plt.show()
+
         return self.theta
 
 def one_vs_all(args) -> None:
@@ -115,17 +118,17 @@ def one_vs_all(args) -> None:
     x, y = utils.get_data("./datasets/train.csv")
     theta = {}
 
-    for feat_value in np.unique(y):
-        y_one_vs_all = (y == feat_value).astype(int)
-        one_theta = mylr.fit(x, y_one_vs_all, args.show)
-        theta[feat_value] = one_theta.flatten().tolist()
+    for label in np.unique(y):
+        y_one_vs_all = (y == label).astype(int)
+        one_theta = mylr.fit(x, y_one_vs_all, args, label)
+        theta[label] = one_theta.flatten().tolist()
 
     utils.save_theta({ utils.LABEL_FEATURE: theta })
 
 
 def main():
-    DEFAULT_ALPHA = 1e-2
-    DEFAULT_ITER = 1000
+    DEFAULT_ALPHA = 1e-1
+    DEFAULT_ITER = int(7e+3)
 
     parser = argparse.ArgumentParser(description='Train model with logistic regression')
     parser.add_argument('--alpha', action='store', default=DEFAULT_ALPHA, type=float,
@@ -134,6 +137,8 @@ def main():
         help=f'define number of iterations (default: {DEFAULT_ITER})')
     parser.add_argument('--show', action='store_true',
         help='display plots during gradient descent')
+    parser.add_argument('--loss', action='store_true', help='plot the loss')
+    parser.add_argument('-r', dest='repartition', action='store_true', help='plot the data repartition')
     args = parser.parse_args()
 
     one_vs_all(args)
