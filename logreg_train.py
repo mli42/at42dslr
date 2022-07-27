@@ -15,18 +15,23 @@ class MyLogRegression():
         print(f"MyLR: Using {self.alpha = }, and {self.max_iter = }")
 
     @staticmethod
-    def cost_(y: np.ndarray, y_hat: np.ndarray) -> float:
+    def cost_(y: np.ndarray, y_hat: np.ndarray, eps: float = 1e-15) -> float:
         """Computes the mean squared error of two non-empty numpy.ndarray.
             The two arrays must have the same dimensions.
         Args:
             y: has to be an numpy.ndarray, a vector.
             y_hat: has to be an numpy.ndarray, a vector.
         Returns:
-            The mean squared error (MSE) of the two vectors as a float.
+            The cross-entropy loss of the two vectors as a float.
         """
         if y.shape != y_hat.shape:
             return None
-        j_elem = (y_hat - y) ** 2 / y.shape[0]
+        y = y + eps
+        m = y.shape[0]
+        ones = np.ones(y.shape)
+
+        j_elem = y * np.log(y_hat) + (ones - y) * np.log(ones - y_hat)
+        j_elem /= -m
         return np.sum(j_elem)
 
     def plot_hypo(self, x: np.ndarray, y: np.ndarray, y_hat: np.ndarray, label: str) -> None:
