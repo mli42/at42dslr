@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.metrics import accuracy_score
 import utils
+from Math import Math
 import argparse
 from typing import List, Tuple
 
@@ -52,6 +53,14 @@ class MyLogRegression():
         plt.xlabel(axes_labels[0])
         plt.ylabel(axes_labels[1])
 
+
+    def get_minmax(self, x: np.ndarray, i: int) -> List[float]:
+        df = pd.DataFrame(x)
+        x_min = Math.first_quartile(df[i])
+        x_max = Math.third_quartile(df[i])
+        return [x_min, x_max]
+
+
     def minmax(self, x: np.ndarray) -> np.ndarray:
         """Computes the normalized version of a non-empty numpy.ndarray using the min-max standardization.
         Args:
@@ -61,7 +70,8 @@ class MyLogRegression():
         """
         x = x.copy()
         for i in range(x.shape[1]):
-            x[..., i] = utils.minmax(x[..., i], np.min(x[..., i]), np.max(x[..., i]))
+            x_min, x_max = self.get_minmax(x, i)
+            x[..., i] = utils.minmax(x[..., i], x_min, x_max)
         return x
 
     def gradient(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
@@ -139,7 +149,15 @@ def one_vs_all(args) -> None:
         one_theta = mylr.fit(x, y_one_vs_all, args, label)
         theta[label] = one_theta.flatten().tolist()
 
-    utils.save_theta({ utils.LABEL_FEATURE: theta })
+    std = {}
+    for i in range(x.shape[1]):
+        x_min, x_max = mylr.get_minmax(x, i)
+        std[i] = [x_min, x_max]
+
+    utils.save_theta({
+        utils.LABEL_FEATURE: theta,
+        'std': std
+    })
 
 
 def main():

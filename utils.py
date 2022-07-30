@@ -52,6 +52,7 @@ def predict(x: np.ndarray, theta: np.ndarray) -> np.ndarray:
 
 def get_numeric_features(df: pd.DataFrame, drop_index: bool = False) -> pd.DataFrame:
     df = df.select_dtypes(include=[np.number])
+    df.dropna(how='all', axis=1, inplace=True)
 
     if drop_index and 'Index' in df.columns:
         df.drop('Index', axis=1, inplace=True)
