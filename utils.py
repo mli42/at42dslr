@@ -1,7 +1,7 @@
 import json
 import numpy as np
 import pandas as pd
-from typing import Tuple
+from typing import Tuple, Dict
 
 THETA_FILE = "theta.json"
 FEATURES = ["Astronomy", "Ancient Runes"]
@@ -92,7 +92,7 @@ def save_theta(theta: np.ndarray) -> None:
 def get_default_theta() -> np.ndarray:
     return np.asarray([[.0]] * THETA_SIZE)
 
-def get_theta() -> np.ndarray:
+def get_theta() -> Dict:
     theta = None
 
     try:
@@ -115,7 +115,7 @@ def minmax(x: np.ndarray, x_min: float, x_max: float) -> np.ndarray:
     return res
 
 
-def get_data(path: str) -> Tuple[np.ndarray, np.ndarray]:
+def get_data(path: str, isTest: bool = False) -> Tuple[np.ndarray, np.ndarray]:
     """Read the data and returns the data X and the labels Y
     Returns:
         Tuple[np.ndarray, np.ndarray]: x , y
@@ -127,8 +127,11 @@ def get_data(path: str) -> Tuple[np.ndarray, np.ndarray]:
     except Exception as e:
         print(f"{get_data.__name__}: {e}")
         exit(1)
-    df = df[[*FEATURES, LABEL_FEATURE]].dropna()
+    mask = [*FEATURES]
+    if not isTest:
+        mask.append(LABEL_FEATURE)
+    df = df[mask].dropna()
     x = df[FEATURES].to_numpy()
-    y = df[LABEL_FEATURE].to_numpy().reshape(-1, 1)
+    y = df[LABEL_FEATURE].to_numpy().reshape(-1, 1) if not isTest else None
 
     return (x, y)
