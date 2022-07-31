@@ -130,7 +130,11 @@ def get_data(path: str, isTest: bool = False) -> Tuple[np.ndarray, np.ndarray]:
     mask = [*FEATURES]
     if not isTest:
         mask.append(LABEL_FEATURE)
-    df = df[mask].dropna()
+    df = df[mask]
+    if isTest:
+        df = df.fillna(df.median())
+    else:
+        df = df.dropna()
     x = df[FEATURES].to_numpy()
     y = df[LABEL_FEATURE].to_numpy().reshape(-1, 1) if not isTest else None
 
