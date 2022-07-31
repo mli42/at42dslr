@@ -1,9 +1,24 @@
 #!/usr/bin/env python3
 
+import csv
 import numpy as np
 import utils
 import argparse
-from typing import Tuple
+from typing import Tuple, List, Dict
+
+
+def save_prediction(y_hat: List[str]) -> None:
+    """ Save prediction into file
+
+    Args:
+        y_hat (List[str]): List of predicted labels
+    """
+    keys = ['Index', utils.LABEL_FEATURE]
+    rows = [{keys[0]: i, keys[1]: pred} for i, pred in enumerate(y_hat)]
+    with open('houses.csv', 'w', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=keys)
+        writer.writeheader()
+        writer.writerows(rows)
 
 
 def get_data() -> Tuple:
@@ -42,8 +57,27 @@ def get_data() -> Tuple:
         norm_x[..., i] = utils.minmax(x[..., i], x_min, x_max)
     return (x, norm_x, labels)
 
+
 def predict() -> None:
-    x, norm_x, labels = get_data()
+    x, norm_x, thetas = get_data()
+    y_hat = []
+
+    # Predict for all labels and concatenate into one matrix
+    one_vs_all = []
+    for house, theta in thetas.items():
+        theta = np.array(theta).reshape(-1, 1)
+        one_vs_all.append(utils.predict(norm_x, theta))
+    one_vs_all = np.concatenate(one_vs_all, axis=1)
+
+    # Find max-value for each row to determine the predicted label
+    labels = list(thetas.keys())
+    for pred in one_vs_all:
+        index = np.argmax(pred)
+        pred_label = labels[index]
+        y_hat.append(pred_label)
+
+    save_prediction(y_hat)
+
 
 def main():
     parser = argparse.ArgumentParser(description='Predict with logistic regression')
