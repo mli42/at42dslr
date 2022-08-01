@@ -15,10 +15,13 @@ def save_prediction(y_hat: List[str]) -> None:
     """
     keys = ['Index', utils.LABEL_FEATURE]
     rows = [{keys[0]: i, keys[1]: pred} for i, pred in enumerate(y_hat)]
-    with open('houses.csv', 'w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=keys)
-        writer.writeheader()
-        writer.writerows(rows)
+    try:
+        with open('houses.csv', 'w', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=keys)
+            writer.writeheader()
+            writer.writerows(rows)
+    except Exception as e:
+        print(f"{save_prediction.__name__} failed: {e}")
 
 
 def get_data() -> Tuple:

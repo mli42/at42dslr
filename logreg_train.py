@@ -100,7 +100,6 @@ class MyLogRegression():
             Trained theta
         """
         print(f"==> Training for label '{label}'...")
-        alpha = self.alpha
         self.theta = utils.get_default_theta()
         if x.shape[0] != y.shape[0] or self.theta.shape != (x.shape[1] + 1, 1) or self.max_iter <= 0:
             return None
@@ -111,7 +110,7 @@ class MyLogRegression():
 
         for i in range(self.max_iter):
             gradient = self.gradient(norm_x, y)
-            self.theta -= gradient
+            self.theta -= self.alpha * gradient
 
             y_hat = utils.predict(norm_x, self.theta)
             running_loss = MyLogRegression.cost_(y, y_hat)
