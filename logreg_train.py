@@ -140,7 +140,7 @@ class MyLogRegression():
 
 def one_vs_all(args) -> None:
     mylr = MyLogRegression(alpha=args.alpha, max_iter=args.max_iter)
-    x, y = utils.get_data("./datasets/train.csv")
+    x, y = utils.get_data(args.dataset)
     theta = {}
 
     for label in np.unique(y):
@@ -162,8 +162,10 @@ def one_vs_all(args) -> None:
 def main():
     DEFAULT_ALPHA = 1e-1
     DEFAULT_ITER = int(7e+3)
+    DEFAULT_DATASET = './datasets/train.csv'
 
     parser = argparse.ArgumentParser(description='Train model with logistic regression')
+    parser.add_argument('--dataset', type=str, default=DEFAULT_DATASET, help=f'dataset used (default: {DEFAULT_DATASET})')
     parser.add_argument('--alpha', action='store', default=DEFAULT_ALPHA, type=float,
         help=f'define learning rate (default: {DEFAULT_ALPHA})')
     parser.add_argument('--max_iter', action='store', default=DEFAULT_ITER, type=int,

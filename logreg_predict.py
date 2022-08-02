@@ -24,7 +24,7 @@ def save_prediction(y_hat: List[str]) -> None:
         print(f"{save_prediction.__name__} failed: {e}")
 
 
-def get_data() -> Tuple:
+def get_data(path: str) -> Tuple:
     """ Retrieve data and verify format
     Returns:
         Tuple: (x, norm_x, labels)
@@ -32,7 +32,7 @@ def get_data() -> Tuple:
         norm_x: np.ndarray of x-normalized dataset
         labels: Dict[str, List[float]] matching label and thetas
     """
-    x, _ = utils.get_data("./datasets/test.csv", isTest=True)
+    x, _ = utils.get_data(path, isTest=True)
     data = utils.get_theta()
     if (
         (data is None) or
@@ -61,8 +61,8 @@ def get_data() -> Tuple:
     return (x, norm_x, labels)
 
 
-def predict() -> None:
-    x, norm_x, thetas = get_data()
+def predict(args) -> None:
+    x, norm_x, thetas = get_data(args.dataset)
     y_hat = []
 
     # Predict for all labels and concatenate into one matrix
@@ -83,10 +83,13 @@ def predict() -> None:
 
 
 def main():
+    DEFAULT_DATASET = './datasets/test.csv'
+
     parser = argparse.ArgumentParser(description='Predict with logistic regression')
+    parser.add_argument('--dataset', type=str, default=DEFAULT_DATASET, help=f'dataset used (default: {DEFAULT_DATASET})')
     args = parser.parse_args()
 
-    predict()
+    predict(args)
 
 
 if __name__ == "__main__":
