@@ -7,6 +7,7 @@ import utils
 from Math import Math
 import argparse
 from typing import List, Tuple
+from tqdm import tqdm
 
 class MyLogRegression():
 
@@ -108,7 +109,7 @@ class MyLogRegression():
         losses = []
         accuracies = []
 
-        for i in range(self.max_iter):
+        for i in tqdm(range(self.max_iter)):
             gradient = self.gradient(norm_x, y)
             self.theta -= self.alpha * gradient
 
