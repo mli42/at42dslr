@@ -4,7 +4,7 @@ import pandas as pd
 from typing import Tuple, Dict
 
 THETA_FILE = "theta.json"
-FEATURES = ["Astronomy", "Ancient Runes"]
+FEATURES = ["Astronomy", "Ancient Runes", "Herbology"]
 THETA_SIZE = len(FEATURES) + 1
 LABEL_FEATURE = "Hogwarts House"
 

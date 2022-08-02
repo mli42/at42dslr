@@ -45,8 +45,8 @@ def get_data(path: str) -> Tuple:
     if (
         not all([isinstance(obj, list) for obj in [*labels.values(), *std.values()]]) or
         len(labels) != 4 or
-        len(std) != 2 or
-        not all([len(lst) == 3 for lst in labels.values()]) or
+        len(std) != len(utils.FEATURES) or
+        not all([len(lst) == utils.THETA_SIZE for lst in labels.values()]) or
         not all([len(lst) == 2 for lst in std.values()]) or
         not all([isinstance(obj, float) for lst in [*labels.values(), *std.values()] for obj in lst])
     ):
